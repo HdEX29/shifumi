@@ -31,10 +31,10 @@
         if ($ia == $choix) {
             return "Egalite !";
         }
-        else if ($ia == $choix+1 or $ia == 1 and $choix == 3) {
+        else if (($ia == $choix+1) || ($ia == 1 && $choix == 3))  {
             return "Defaite...";
         }
-        else if ($ia+1 == $choix or $ia == 3 and $choix == 1) {
+        else if (($ia+1 == $choix) || ($ia == 3 && $choix == 1)) {
             return "Victoire !";
         }
     }
@@ -42,13 +42,19 @@
     session_start();
     if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = random_int(1,3);}
     $resultat = '';
-    if ($_POST['value'] == 'Reset') {session_destroy();}
-    $choix = signetonb($_POST['value']);
-    $ia = $_SESSION['numeroaleatoire'];
-    echo nbtosigne($ia);
-    $resultat = shifumi($ia, $choix);
-    $_SESSION['numeroaleatoire'] = null;
+    if (!empty($_POST['value'])) {
+        if ($_POST['value'] == 'Reset') {
+            session_destroy();
+            header("Location: ".$_SERVER['PHP_SELF']);
+            exit;
+        }
+        $choix = signetonb($_POST['value']);
+        $ia = $_SESSION['numeroaleatoire'];
+        $resultat = shifumi($ia, $choix);
+        $_SESSION['numeroaleatoire'] = null;
+    }
     ?>
+    
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">MENU </a>
@@ -79,15 +85,14 @@
     </nav>
 
     <section class="hero">
-        <div class="container">
+        <div class="container h-100">
             <h1 class="fw-bold">SHIFUMI</h1>
-            <p class="mt-3">Start Bootstrap can help you build better websites using the Bootstrap CSS framework! Just
-                download your template and start going, no strings attached!</p>
-            <a href="#" class="btn btn-start mt-3 a">FIND OUT MORE</a>
-            <main class="h-100 w-50 align-center flex-col-justify-around butt">
+            <p class="mt-3">Votre adversaire joue : <?php if (isset($ia)) {try {echo nbtosigne($ia);} catch (Throwable $t) {echo "Rien, pour l'instant...";}} else {echo "Rien, pour l'instant...";} ?> !</p>
+            <p class="btn btn-start mt-3 a"><?php echo $resultat ?></p>
+            <main class="w-50 align-center flex-col-justify-around butt">
                 <form action="#" method="post">
                     <p class = 'p_absolute1'>
-                        <span id = "message"><?php echo $resultat ?>
+                        <span id = "message">
                     </p>
                     <input class="btn btn-primary" type="submit" value="Pierre" name="value">
                     <input class="btn btn-primary" type="submit" value="Feuille" name="value">

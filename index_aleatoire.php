@@ -128,7 +128,12 @@
         }
     }
 
+    date_default_timezone_set('Europe/Paris');
     session_start();
+    if (!isset($_SESSION['debut_session'])) {$_SESSION['debut_session'] = time();}
+    if (!isset($_SESSION['nbpartie'])) { $_SESSION['nbpartie'] = 1; }
+    if (!isset($_SESSION['nbvictoire'])) { $_SESSION['nbvictoire'] = 0; }
+    if (!isset($_SESSION['nbdefaite'])) { $_SESSION['nbdefaite'] = 0; }
     if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = random_int(1,3);}
     $resultat = '';
     if (!empty($_POST['value'])) {
@@ -141,6 +146,12 @@
         $nbchoix = signetonb($_POST['value']);
         $ia = $_SESSION['numeroaleatoire'];
         $resultat = shifumi($ia, $nbchoix);
+        $_SESSION['nbpartie'] += 1;
+        if ($resultat === "Victoire !") {
+            $_SESSION['nbvictoire'] += 1;
+        } elseif ($resultat !== "Egalite !") {
+            $_SESSION['nbdefaite'] += 1;
+        }
         $_SESSION['numeroaleatoire'] = null;
     }
     ?>
@@ -157,22 +168,22 @@
                     <ul class="navbar-nav align-items-lg-center gap-lg-3">
                         <li class="nav-item">
                             <span class="badge bg-info text-dark">
-                                Heure de début<span id="round-number"> 00:00</span>
+                                Heure de début <span id="round-number"><?= date("H:i", $_SESSION['debut_session'])?></span>
                             </span>
                         </li>
                         <li class="nav-item">
                             <span class="badge bg-info text-dark">
-                                Partie n° <span id="round-number">1</span>
+                                Partie n° <span id="round-number"><?= $_SESSION['nbpartie'] ?></span>
                             </span>
                         </li>
                         <li class="nav-item">
                             <span class="badge bg-success">
-                                Victoires joueur : <span id="player-wins">0</span>
+                                Victoires joueur : <span id="player-wins"><?= $_SESSION['nbvictoire'] ?></span>
                             </span>
                         </li>
                         <li class="nav-item">
                             <span class="badge bg-danger">
-                                Victoires machine : <span id="computer-wins">0</span>
+                                Victoires machine : <span id="computer-wins"><?= $_SESSION['nbdefaite'] ?></span>
                             </span>
                         </li>
                     </ul>
@@ -182,17 +193,26 @@
 
     
     <main class="container my-5">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card game-card shadow-lg text-light">
-                        <div class="card-body p-4 p-md-5 game-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card game-card shadow-lg text-light">
+                    <div class="card-body p-4 p-md-5 game-container">
                         
-                            <section class="hero">
-                                <div class="container">
-                                    <h1 class="fw-bold">Jeu Shifumi</h1>
-                                    <p class="mt-3">Choisis une main pour affronter la machine 😉 </p>
-                                <p1 class="mt-3">Rappelez-vous❗ Pierre🪨 bat Ciseaux✂, Ciseaux✂ battent Feuille📋 et Feuille📋 bat Pierre🪨</p>
-                            <div class="row g-4">
+                        <section class="hero">
+                            <div class="container">
+                                <h1 class="fw-bold">Jeu Shifumi</h1>
+                                <p class="mt-3">Choisis une main pour affronter la machine 😉 </p>
+                                <div class="container-m1">
+                                    <p class="mt-3">
+                                        Rappelez-vous❗
+                                    <ul>
+                                        <li>🔹Pierre🪨 bat Ciseaux✂</li>
+                                        <li>🔹Ciseaux✂ battent Feuille📋</li>
+                                        <li>🔹Feuille📋 bat Pierre🪨</li>
+                                    </ul>
+                                    </p>
+                                </div>                            
+                                <div class="row g-4">
 
                 
                 <div class="game-center">  
@@ -264,13 +284,10 @@
                     <hr class="my-4">
 
                     
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div class="d-flex flex-md-row justify-content-center align-items-md-center gap-3">
                     <span class="small text-black-50">
                         Conseil : enchaîne les parties pour voir qui domine sur le long terme !
                     </span>
-                    <button id="reset-btn" class="btn btn-light btn-sm text-uppercase fw-semibold">
-                        Réinitialiser les scores
-                    </button>
                     </div>
 
                 </div>

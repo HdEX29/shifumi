@@ -32,14 +32,10 @@ p {
     font-size: 1.4em;
     color: black;
     text-align: center;
-<<<<<<< HEAD
-    padding: 10px;
-=======
 }
 
 #resultat {
     font-size: 1.25em;
->>>>>>> bbf2eaece00182a65086c6b3a83f4739cfbf26f7
 }
 
 .m-20 {
@@ -50,7 +46,6 @@ p {
 .container-m1 {
     font-size: 1.3em;
     color: black;
-<<<<<<< HEAD
     text-align: left;
     display: block;
     background-color: rgb(175, 220, 227);
@@ -60,9 +55,6 @@ ul {
     list-style-type: none;
     padding: 0;
     margin: 0;
-=======
-    text-align: center;
->>>>>>> bbf2eaece00182a65086c6b3a83f4739cfbf26f7
 }
 
 .h-100 {

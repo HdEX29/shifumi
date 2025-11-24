@@ -3,12 +3,76 @@
 
 <head>
     <meta charset="UTF-8">
+    <title>Shifumi</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
+
+<style>  
+    body {
+         min-height: 100vh;
+   background:
+  radial-gradient(circle at 25% 40%, rgba(200,255,241,0.9), transparent 60%),
+  radial-gradient(circle at 75% 60%, rgba(212,230,255,0.9), transparent 60%),
+  #f0e6ff;
+
+}
+
+ .game-card {
+      background: rgba(239, 237, 243, 0.897);
+      backdrop-filter: blur(8px);
+      border-radius: 1.5rem;
+    }
+    .hand-icon {
+      font-size: 2.5rem;
+      color: #000 ;
+      }
+.game-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;     
+    text-align: center;
+}
+
+.choice-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    width: 100%;
+}
+.choice-buttons span {
+    color: #000;
+}
+
+.result-block {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.message-block {
+    text-align: center;
+    width: 100%;
+    margin-top: 1rem;
+    
+}
+#message {
+    color: #000 !important;
+    background-color: #d6ecff;
+    border-color: transparent;
+}
+.small.text-white-50{
+    color: #000;
+    opacity: 1 ;
+}
+</style>
 
 <body>
     <?php
@@ -21,9 +85,9 @@
 
     function nbtosigne($nb) 
     {
-        if ($nb == 1) {return 'Pierre';}
-        else if ($nb == 2) {return 'Feuille';}
-        else if ($nb == 3) {return 'Ciseaux';}
+            if ($nb == 1) {return 'Pierre';}
+            else if ($nb == 2) {return 'Feuille';}
+            else if ($nb == 3) {return 'Ciseaux';}
     }
 
     function shifumi($ia, $choix)
@@ -39,6 +103,31 @@
         }
     }
 
+    function addicon($signe) 
+    {
+        if (isset($signe)) {
+            {try {
+                if ($signe == 'Pierre') {return '<span class="hand-icon mb-1"><i class="fa-regular fa-hand-back-fist"></i></span>';}
+                elseif ($signe == 'Feuille') {return '<span class="hand-icon mb-1"><i class="fa-regular fa-hand"></i></span>';}
+                else {return '<span class="hand-icon mb-1"><i class="fa-regular fa-hand-scissors"></i></span>';}
+            } catch (Throwable $t) {return '<div id="player-hand-icon" class="hand-icon mb-1">?</div>';}}
+            
+        } else {return '<div id="player-hand-icon" class="hand-icon mb-1">?</div>';}
+    }
+    
+    function choice($signe)
+    {
+        if (isset($signe)) {
+            try {
+                return $signe;
+            } catch (Throwable $t) {
+                return "En attente...";
+            }
+        } else {
+            return "En attente...";
+        }
+    }
+
     session_start();
     if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = random_int(1,3);}
     $resultat = '';
@@ -48,57 +137,150 @@
             header("Location: ".$_SERVER['PHP_SELF']);
             exit;
         }
-        $choix = signetonb($_POST['value']);
+        $choix = $_POST['value'];
+        $nbchoix = signetonb($_POST['value']);
         $ia = $_SESSION['numeroaleatoire'];
-        $resultat = shifumi($ia, $choix);
+        $resultat = shifumi($ia, $nbchoix);
         $_SESSION['numeroaleatoire'] = null;
     }
     ?>
-    
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">MENU </a>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light bg-opacity-75 sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">SHIFUMI –    Joueur 👤  vs Machine 💻 </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">ABOUT</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">SERVICES</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link -toggle" href="#" aria-expanded="false">
-                            PORTFOLIO
-                        </a>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">CONTACT</a>
-                    </li>
-                </ul>
-
+            <div class="collapse navbar-collapse justify-content-end" id="navbarStats">
+                <ul class="navbar-nav align-items-lg-center gap-lg-3">
+                    <ul class="navbar-nav align-items-lg-center gap-lg-3">
+                        <li class="nav-item">
+                            <span class="badge bg-info text-dark">
+                                Heure de début<span id="round-number"> 00:00</span>
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <span class="badge bg-info text-dark">
+                                Partie n° <span id="round-number">1</span>
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <span class="badge bg-success">
+                                Victoires joueur : <span id="player-wins">0</span>
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <span class="badge bg-danger">
+                                Victoires machine : <span id="computer-wins">0</span>
+                            </span>
+                        </li>
+                    </ul>
             </div>
         </div>
     </nav>
 
-    <section class="hero">
-        <div class="container h-100">
-            <h1 class="fw-bold m-bot">SHIFUMI</h1>
-            <p>Votre adversaire joue : <?php if (isset($ia)) {try {echo nbtosigne($ia);} catch (Throwable $t) {echo "Rien, pour l'instant...";}} else {echo "Rien, pour l'instant...";} ?> !</p>
-            <p id ="resultat"><?php echo $resultat ?></p>
-            <main class="w-50 align-center flex-col-justify-around butt">
-                <form action="#" method="post">
-                    <input class="btn btn-primary" type="submit" value="Pierre" name="value">
-                    <input class="btn btn-primary" type="submit" value="Feuille" name="value">
-                    <input class="btn btn-primary" type="submit" value="Ciseaux" name="value">
-                    <input class="btn btn-primary" type="submit" value="Reset" name="value">
-                </form>
-            </main>
-        </div>
-    </section>
+    
+    <main class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card game-card shadow-lg text-light">
+                        <div class="card-body p-4 p-md-5 game-container">
+                        
+                            <section class="hero">
+                                <div class="container">
+                                    <h1 class="fw-bold">Jeu Shifumi</h1>
+                                    <p class="mt-3">Choisis une main pour affronter la machine 😉 </p>
+                                <p1 class="mt-3">Rappelez-vous❗ Pierre🪨 bat Ciseaux✂, Ciseaux✂ battent Feuille📋 et Feuille📋 bat Pierre🪨</p>
+                            <div class="row g-4">
 
+                
+                <div class="game-center">  
+        <h5 class="text-uppercase small fw-semibold mb-3 mt-4">Ton choix</h5>  
+ 
+        <form action="#" method="post" class="choice-buttons">
+                <button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
+                        type="submit" name="value" value="Pierre">  
+                    <span class="hand-icon mb-1">  
+                        <i class="fa-regular fa-hand-back-fist"></i>  
+                    </span>  
+                    <span class="small text-uppercase fw-semibold">Pierre</span>  
+                </button>  
+
+                
+                <button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
+                        type="submit" name="value" value="Feuille">  
+                    <span class="hand-icon mb-1">  
+                        <i class="fa-regular fa-hand"></i>  
+                    </span>  
+                    <span class="small text-uppercase fw-semibold">Feuille</span>  
+                </button>  
+
+                
+                <button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
+                        type="submit" name="value" value="Ciseaux">  
+                    <span class="hand-icon mb-1">  
+                        <i class="fa-regular fa-hand-scissors"></i>  
+                    </span>  
+                    <span class="small text-uppercase fw-semibold">Ciseaux</span>  
+                </button>  
+        </form>  
+
+        <div class="text-center mt-3">  
+            <form action="#" method="post">
+                <button class="btn btn-dark btn-sm text-uppercase fw-semibold"  
+                        type="submit" name="value" value="Reset">  
+                    Reset  
+                </button>
+            </form>
+        </div>  
+
+        
+        <h5 class="text-uppercase small fw-semibold mb-3 mt-4"><?php echo $resultat ?></h5>  
+
+        <div class="result-block">  
+            <div class="d-flex gap-4 justify-content-center">  
+                <div>  
+                    <div class="small text-uppercase text-muted mb-1">Toi</div>  
+                    <?= addicon($choix ?? null)?>
+                    <div id="player-hand-text" class="small"><?= choice($choix ?? null) ?></div>  
+                </div>  
+
+                <div>  
+                    <div class="small text-uppercase text-muted mb-1">Machine</div>  
+                    <?= addicon(nbtosigne($ia ?? null) ?? null)?>  
+                    <div id="computer-hand-text" class="small"><?= choice(nbtosigne($ia ?? null) ?? null) ?></div>  
+                </div>  
+            </div>  
+        </div>  
+        <a href="#" class="btn btn-start mt-3 a">Qui sera le champion 🥇 ? </a>
+
+        <div id="message" class="alert alert-info mt-2 mb-0 message-block">  
+            Clique sur une main pour commencer la partie.  
+        </div>
+
+        </div>
+
+                    <hr class="my-4">
+
+                    
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <span class="small text-black-50">
+                        Conseil : enchaîne les parties pour voir qui domine sur le long terme !
+                    </span>
+                    <button id="reset-btn" class="btn btn-light btn-sm text-uppercase fw-semibold">
+                        Réinitialiser les scores
+                    </button>
+                    </div>
+
+                </div>
+                </div>
+            </div>
+            </div>
+    </main>
+</body>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </html>

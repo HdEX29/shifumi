@@ -86,14 +86,11 @@
 
     <section class="hero">
         <div class="container h-100">
-            <h1 class="fw-bold">SHIFUMI</h1>
-            <p class="mt-3">Votre adversaire joue : <?php if (isset($ia)) {try {echo nbtosigne($ia);} catch (Throwable $t) {echo "Rien, pour l'instant...";}} else {echo "Rien, pour l'instant...";} ?> !</p>
-            <p class="btn btn-start mt-3 a"><?php echo $resultat ?></p>
+            <h1 class="fw-bold m-bot">SHIFUMI</h1>
+            <p>Votre adversaire joue : <?php if (isset($ia)) {try {echo nbtosigne($ia);} catch (Throwable $t) {echo "Rien, pour l'instant...";}} else {echo "Rien, pour l'instant...";} ?> !</p>
+            <p id ="resultat"><?php echo $resultat ?></p>
             <main class="w-50 align-center flex-col-justify-around butt">
                 <form action="#" method="post">
-                    <p class = 'p_absolute1'>
-                        <span id = "message">
-                    </p>
                     <input class="btn btn-primary" type="submit" value="Pierre" name="value">
                     <input class="btn btn-primary" type="submit" value="Feuille" name="value">
                     <input class="btn btn-primary" type="submit" value="Ciseaux" name="value">

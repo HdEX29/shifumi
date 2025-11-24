@@ -34,8 +34,8 @@ p {
     color: black;
 }
 
-.a {
-    background-color: white;
+#resultat {
+    font-size: 1.25em;
 }
 
 .h-100 {
@@ -55,4 +55,8 @@ p {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+}
+
+.m-bot {
+    margin-bottom: 30px;
 }

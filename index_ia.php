@@ -11,66 +11,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
-<style>  
+<style>
     body {
-         min-height: 100vh;
-   background:
-  radial-gradient(circle at 25% 40%, rgba(200,255,241,0.9), transparent 60%),
-  radial-gradient(circle at 75% 60%, rgba(212,230,255,0.9), transparent 60%),
-  #f0e6ff;
-
-}
-
- .game-card {
-      background: rgba(239, 237, 243, 0.897);
-      backdrop-filter: blur(8px);
-      border-radius: 1.5rem;
-    }
-    .hand-icon {
-      font-size: 2.5rem;
-      color: #000 ;
-      }
-.game-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;     
-    text-align: center;
-}
-
-.choice-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.5rem;
-    width: 100%;
-}
-.choice-buttons span {
-    color: #000;
-}
-
-.result-block {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.message-block {
-    text-align: center;
-    width: 100%;
-    margin-top: 1rem;
-    
-}
-#message {
-    color: #000 !important;
-    background-color: #d6ecff;
-    border-color: transparent;
-}
-.small.text-white-50{
-    color: #000;
-    opacity: 1 ;
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 25% 40%, rgba(200, 255, 241, 0.9), transparent 60%),
+        radial-gradient(circle at 75% 60%, rgba(212, 230, 255, 0.9), transparent 60%),
+        #f0e6ff;
 }
 </style>
 
@@ -228,7 +175,7 @@
     ?>
     <nav class="navbar navbar-expand-lg navbar-light bg-light bg-opacity-75 sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">SHIFUMI –    Joueur 👤  vs Machine 💻 </a>
+            <a class="navbar-brand" href="#">SHIFUMI –    Joueur 👤  vs AM 💻 </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -254,7 +201,7 @@
                         </li>
                         <li class="nav-item">
                             <span class="badge bg-danger">
-                                Victoires machine : <span id="computer-wins"><?= $_SESSION['nbdefaite'] ?></span>
+                                Victoires AM : <span id="computer-wins"><?= $_SESSION['nbdefaite'] ?></span>
                             </span>
                         </li>
                     </ul>
@@ -272,17 +219,10 @@
                         <section class="hero">
                             <div class="container">
                                 <h1 class="fw-bold">Jeu Shifumi</h1>
-                                <p class="mt-3">Choisis une main pour affronter la machine 😉 </p>
-                                <div class="container-m1">
-                                    <p class="mt-3">
-                                        Rappelez-vous❗
-                                    <ul>
-                                        <li>🔹Pierre🪨 bat Ciseaux✂</li>
-                                        <li>🔹Ciseaux✂ battent Feuille📋</li>
-                                        <li>🔹Feuille📋 bat Pierre🪨</li>
-                                    </ul>
-                                    </p>
-                                </div>                            
+                                <p class="mt-3">Choisis une main pour affronter AM 😉 </p>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                    Rappel
+                                </button>                           
                                 <div class="row g-4">
 
                 
@@ -344,7 +284,7 @@
                 </div>  
             </div>  
         </div>  
-        <a href="#" class="btn btn-start mt-3 a">Qui sera le champion 🥇 ? </a>
+        <a href="index_aleatoire.php" class="btn btn-start mt-3 a"><strong>Tester la version avec l'IA aleatoire : </strong></a>
 
         <div id="message" class="alert alert-info mt-2 mb-0 message-block">  
             Clique sur une main pour commencer la partie.  
@@ -356,9 +296,9 @@
 
                     
                     <div class="d-flex flex-md-row justify-content-center align-items-md-center gap-3">
-                    <span class="small text-black-50">
-                        Conseil : enchaîne les parties pour voir qui domine sur le long terme !
-                    </span>
+                        <span class="small text-black-50">
+                            Conseil : enchaîne les parties pour voir qui domine sur le long terme !
+                        </span>
                     </div>
 
                 </div>
@@ -368,7 +308,27 @@
     </main>
 </body>
 
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Rappelez-vous❗</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul>
+            <li>🔹La Pierre🪨 bat Les Ciseaux✂</li>
+            <li>🔹Les Ciseaux✂ battent La Feuille📋</li>
+            <li>🔹La Feuille📋 bat La Pierre🪨</li>
+        </ul>
+        <p style="margin-bottom: 0; font-size: 20px">AM est doté d'intelligence et il vous déteste,</p>
+        <p style ="font-size: 20px">le hasard ne vous ménera pas à la victoire</p>
+      </div>
+    </div>
+  </div>
+</div>
   
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </html>

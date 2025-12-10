@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Shifumi</title>
+    <title>Shifumi TBBT</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -97,7 +97,7 @@
     if (!isset($_SESSION['nbpartie'])) { $_SESSION['nbpartie'] = 1; }
     if (!isset($_SESSION['nbvictoire'])) { $_SESSION['nbvictoire'] = 0; }
     if (!isset($_SESSION['nbdefaite'])) { $_SESSION['nbdefaite'] = 0; }
-    if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = random_int(1,3);}
+    if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = random_int(1,5);}
     $resultat = '';
     if (!empty($_POST['value'])) {
         if ($_POST['value'] == 'Reset') {
@@ -106,7 +106,7 @@
             exit;
         }
         $choix = $_POST['value'];
-        $ia = $_SESSION['numeroaleatoire'];
+        $ia = nbtosigne($_SESSION['numeroaleatoire']);
         $resultat = shifumi($ia, $choix);
         $_SESSION['nbpartie'] += 1;
         if ($resultat === "Victoire !") {
@@ -119,7 +119,7 @@
     ?>
     <nav class="navbar navbar-expand-lg navbar-light bg-light bg-opacity-75 sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">SHIFUMI –    Joueur 👤  vs Machine 💻 </a>
+            <a class="navbar-brand" href="#">SHIFUMI –    Joueur 👤  vs Machine 💻 – Version The Big Bang Theory</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -165,7 +165,7 @@
                                 <h1 class="fw-bold">Jeu Shifumi</h1>
                                 <p class="mt-3">Choisis une main pour affronter la machine 😉 </p>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                    Rappel
+                                    Rappel des règles
                                 </button>                              
                                 <div class="row g-4">
                 <div class="game-center">  
@@ -235,13 +235,13 @@
 
                 <div>  
                     <div class="small text-uppercase text-muted mb-1">Machine</div>  
-                    <?= addicon(nbtosigne($ia ?? null) ?? null)?>  
-                    <div id="computer-hand-text" class="small"><?= choice(nbtosigne($ia ?? null) ?? null) ?></div>  
+                    <?= addicon($ia ?? null)?>  
+                    <div id="computer-hand-text" class="small"><?= choice($ia ?? null)?></div>  
                 </div>  
             </div>  
-        </div>  
+        </div>
+        <a href="index_aleatoire.php" class="btn btn-start mt-3 a"><strong>Tester la version avec l'IA aléatoire !</strong></a><br>
         <a href="index_ia.php" class="btn btn-start mt-3 a"><strong>Affronter AM au Shifumi ! </strong></a>
-
         <div id="message" class="alert alert-info mt-2 mb-0 message-block">  
             Clique sur une main pour commencer la partie.  
         </div>
@@ -274,9 +274,11 @@
       </div>
       <div class="modal-body">
         <ul>
-            <li>🔹La Pierre🪨 bat Les Ciseaux✂</li>
-            <li>🔹Les Ciseaux✂ battent La Feuille📋</li>
-            <li>🔹La Feuille📋 bat La Pierre🪨</li>
+            <li>🔹La Pierre🪨 bat Les Ciseaux✂ et Le Lézard🦎​</li>
+            <li>🔹Les Ciseaux✂ battent La Feuille📋 et Le Lézard🦎​</li>
+            <li>🔹La Feuille📋 bat La Pierre🪨 et Spock🖖</li>
+            <li>🔹Le Lézard🦎 bat La Feuille📋 et Spock🖖</li>
+            <li>🔹Spock🖖 bat La Pierre🪨 et Les Ciseaux✂</li>
         </ul>
       </div>
     </div>

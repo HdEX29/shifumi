@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Shifumi</title>
+    <title>Shifumi vs AM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -206,7 +206,7 @@
                                 <h1 class="fw-bold">Jeu Shifumi</h1>
                                 <p class="mt-3">Choisis une main pour affronter AM 😉 </p>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                    Rappel
+                                    Rappel des règles
                                 </button>                           
                                 <div class="row g-4">
 
@@ -269,8 +269,8 @@
                 </div>  
             </div>  
         </div>  
-        <a href="index_aleatoire.php" class="btn btn-start mt-3 a"><strong>Tester la version avec l'IA aleatoire : </strong></a>
-
+        <a href="index_aleatoire.php" class="btn btn-start mt-3 a"><strong>Tester la version avec l'IA aleatoire ! </strong></a><br>
+        <a href="index_bonus.php" class="btn btn-start mt-3 a"><strong>Tester la version en référence à The Big Bang Theory !</strong></a>
         <div id="message" class="alert alert-info mt-2 mb-0 message-block">  
             Clique sur une main pour commencer la partie.  
         </div>

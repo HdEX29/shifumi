@@ -11,66 +11,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
-<style>  
+<style>
     body {
-         min-height: 100vh;
-   background:
-  radial-gradient(circle at 25% 40%, rgba(200,255,241,0.9), transparent 60%),
-  radial-gradient(circle at 75% 60%, rgba(212,230,255,0.9), transparent 60%),
-  #f0e6ff;
-
-}
-
- .game-card {
-      background: rgba(239, 237, 243, 0.897);
-      backdrop-filter: blur(8px);
-      border-radius: 1.5rem;
-    }
-    .hand-icon {
-      font-size: 2.5rem;
-      color: #000 ;
-      }
-.game-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;     
-    text-align: center;
-}
-
-.choice-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.5rem;
-    width: 100%;
-}
-.choice-buttons span {
-    color: #000;
-}
-
-.result-block {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.message-block {
-    text-align: center;
-    width: 100%;
-    margin-top: 1rem;
-    
-}
-#message {
-    color: #000 !important;
-    background-color: #d6ecff;
-    border-color: transparent;
-}
-.small.text-white-50{
-    color: #000;
-    opacity: 1 ;
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 25% 40%, rgba(200, 255, 241, 0.9), transparent 60%),
+        radial-gradient(circle at 75% 60%, rgba(212, 230, 255, 0.9), transparent 60%),
+        #f0e6ff;
 }
 </style>
 
@@ -128,7 +75,83 @@
         }
     }
 
+    function beats($choix) {
+        return [
+            'Pierre'  => 'Feuille',
+            'Feuille' => 'Ciseaux',
+            'Ciseaux' => 'Pierre'
+        ][$choix];
+    }
+
+    function am_choice($player_choice = null)
+    {
+        $tour  = $_SESSION['am_tour'];
+        $histo = &$_SESSION['am_history'];
+        $histo_player = &$_SESSION['player_history'];
+
+        // Sauvegarde du choix joueur si donné
+        if ($player_choice !== null) {
+            $histo_player[] = $player_choice;
+        }
+
+        $options = ['Pierre', 'Feuille', 'Ciseaux'];
+        $choice = null;
+
+        // ---- LOGIQUE DE HAL ----
+
+        switch ($tour) {
+
+            case 1: // Tour 1 : HAL choisit aléatoirement
+                $choice = $options[array_rand($options)];
+                break;
+
+            case 2: // Tour 2 : HAL bat le choix joueur du tour 1
+                $choice = beats($histo_player[count($histo_player) - 2]);  
+                break;
+
+            case 3: // Tour 3 : HAL répète son tour 1
+                $choice = $histo[0];  
+                break;
+
+            case 4: // Tour 4 : HAL choisit ce qu'il n'a pas encore dit ou pas depuis longtemps
+                // On trie les options selon leur ancienneté dans l'historique
+                $unused = array_diff($options, $histo);
+
+                if (!empty($unused)) {
+                    // Si HAL n'a jamais dit une option → il la dit maintenant
+                    $choice = array_values($unused)[0];
+                } else {
+                    // Sinon : il choisit l'option la moins utilisée
+                    $counts = array_count_values($histo);
+                    asort($counts); // plus faible utilisation en premier
+                    $choice = array_key_first($counts);
+                }
+                break;
+
+            case 5: // Tour 5 : HAL répète ce que le joueur a choisi au tour 4
+                $choice = $histo_player[count($histo_player) - 2];
+                break;
+    }
+
+    // HAL dit l'option trouvée
+    $histo[] = $choice;
+
+    // Prochain tour
+    $_SESSION['am_tour']++;
+    if ($_SESSION['am_tour'] > 5) {
+        $_SESSION['am_tour'] = 1;
+    }
+
+    return $choice;
+    }
+
+    date_default_timezone_set('Europe/Paris');
     session_start();
+    if (!isset($_SESSION['am_tour'])) {$_SESSION['am_tour'] = 1; $_SESSION['am_history'] = []; $_SESSION['player_history'] = [];}
+    if (!isset($_SESSION['debut_session'])) {$_SESSION['debut_session'] = time();}
+    if (!isset($_SESSION['nbpartie'])) { $_SESSION['nbpartie'] = 1; }
+    if (!isset($_SESSION['nbvictoire'])) { $_SESSION['nbvictoire'] = 0; }
+    if (!isset($_SESSION['nbdefaite'])) { $_SESSION['nbdefaite'] = 0; }
     if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = random_int(1,3);}
     $resultat = '';
     if (!empty($_POST['value'])) {
@@ -139,14 +162,20 @@
         }
         $choix = $_POST['value'];
         $nbchoix = signetonb($_POST['value']);
-        $ia = $_SESSION['numeroaleatoire'];
-        $resultat = shifumi($ia, $nbchoix);
+        $choixMachine = am_choice($choix);
+        $resultat = shifumi(signetonb($choixMachine), $nbchoix);
+        $_SESSION['nbpartie'] += 1;
+        if ($resultat === "Victoire !") {
+            $_SESSION['nbvictoire'] += 1;
+        } elseif ($resultat !== "Egalite !") {
+            $_SESSION['nbdefaite'] += 1;
+        }
         $_SESSION['numeroaleatoire'] = null;
     }
     ?>
     <nav class="navbar navbar-expand-lg navbar-light bg-light bg-opacity-75 sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">SHIFUMI –    Joueur 👤  vs Machine 💻 </a>
+            <a class="navbar-brand" href="#">SHIFUMI –    Joueur 👤  vs AM 💻 </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -157,22 +186,22 @@
                     <ul class="navbar-nav align-items-lg-center gap-lg-3">
                         <li class="nav-item">
                             <span class="badge bg-info text-dark">
-                                Heure de début<span id="round-number"> 00:00</span>
+                                Heure de début <span id="round-number"><?= date("H:i", $_SESSION['debut_session'])?></span>
                             </span>
                         </li>
                         <li class="nav-item">
                             <span class="badge bg-info text-dark">
-                                Partie n° <span id="round-number">1</span>
+                                Partie n° <span id="round-number"><?= $_SESSION['nbpartie'] ?></span>
                             </span>
                         </li>
                         <li class="nav-item">
                             <span class="badge bg-success">
-                                Victoires joueur : <span id="player-wins">0</span>
+                                Victoires joueur : <span id="player-wins"><?= $_SESSION['nbvictoire'] ?></span>
                             </span>
                         </li>
                         <li class="nav-item">
                             <span class="badge bg-danger">
-                                Victoires machine : <span id="computer-wins">0</span>
+                                Victoires AM : <span id="computer-wins"><?= $_SESSION['nbdefaite'] ?></span>
                             </span>
                         </li>
                     </ul>
@@ -182,17 +211,19 @@
 
     
     <main class="container my-5">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card game-card shadow-lg text-light">
-                        <div class="card-body p-4 p-md-5 game-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card game-card shadow-lg text-light">
+                    <div class="card-body p-4 p-md-5 game-container">
                         
-                            <section class="hero">
-                                <div class="container">
-                                    <h1 class="fw-bold">Jeu Shifumi</h1>
-                                    <p class="mt-3">Choisis une main pour affronter la machine 😉 </p>
-                                <p1 class="mt-3">Rappelez-vous❗ Pierre🪨 bat Ciseaux✂, Ciseaux✂ battent Feuille📋 et Feuille📋 bat Pierre🪨</p>
-                            <div class="row g-4">
+                        <section class="hero">
+                            <div class="container">
+                                <h1 class="fw-bold">Jeu Shifumi</h1>
+                                <p class="mt-3">Choisis une main pour affronter AM 😉 </p>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                    Rappel
+                                </button>                           
+                                <div class="row g-4">
 
                 
                 <div class="game-center">  
@@ -247,13 +278,13 @@
                 </div>  
 
                 <div>  
-                    <div class="small text-uppercase text-muted mb-1">Machine</div>  
-                    <?= addicon(nbtosigne($ia ?? null) ?? null)?>  
-                    <div id="computer-hand-text" class="small"><?= choice(nbtosigne($ia ?? null) ?? null) ?></div>  
+                    <div class="small text-uppercase text-muted mb-1">AM</div>  
+                    <?= addicon($choixMachine ?? null)?>  
+                    <div id="computer-hand-text" class="small"><?= choice($choixMachine ?? null) ?></div>  
                 </div>  
             </div>  
         </div>  
-        <a href="#" class="btn btn-start mt-3 a">Qui sera le champion 🥇 ? </a>
+        <a href="index_aleatoire.php" class="btn btn-start mt-3 a"><strong>Tester la version avec l'IA aleatoire : </strong></a>
 
         <div id="message" class="alert alert-info mt-2 mb-0 message-block">  
             Clique sur une main pour commencer la partie.  
@@ -264,13 +295,10 @@
                     <hr class="my-4">
 
                     
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                    <span class="small text-black-50">
-                        Conseil : enchaîne les parties pour voir qui domine sur le long terme !
-                    </span>
-                    <button id="reset-btn" class="btn btn-light btn-sm text-uppercase fw-semibold">
-                        Réinitialiser les scores
-                    </button>
+                    <div class="d-flex flex-md-row justify-content-center align-items-md-center gap-3">
+                        <span class="small text-black-50">
+                            Conseil : enchaîne les parties pour voir qui domine sur le long terme !
+                        </span>
                     </div>
 
                 </div>
@@ -280,7 +308,27 @@
     </main>
 </body>
 
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Rappelez-vous❗</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul>
+            <li>🔹La Pierre🪨 bat Les Ciseaux✂</li>
+            <li>🔹Les Ciseaux✂ battent La Feuille📋</li>
+            <li>🔹La Feuille📋 bat La Pierre🪨</li>
+        </ul>
+        <p style="margin-bottom: 0; font-size: 20px">AM est doté d'intelligence et il vous déteste,</p>
+        <p style ="font-size: 20px">le hasard ne vous ménera pas à la victoire</p>
+      </div>
+    </div>
+  </div>
+</div>
   
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </html>

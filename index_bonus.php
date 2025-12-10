@@ -28,6 +28,8 @@
         if ($signe == 'Pierre') {return 1;}
         else if ($signe == 'Feuille') {return 2;}
         else if ($signe == 'Ciseaux') {return 3;}
+        else if ($signe == 'Lezard') {return 4;}
+        else if ($signe == 'Spock') {return 5;}
     }
 
     function nbtosigne($nb) 
@@ -35,6 +37,8 @@
             if ($nb == 1) {return 'Pierre';}
             else if ($nb == 2) {return 'Feuille';}
             else if ($nb == 3) {return 'Ciseaux';}
+            else if ($nb == 4) {return 'Lezard';}
+            else if ($nb == 5) {return 'Spock';}
     }
 
     function shifumi($ia, $choix)
@@ -42,12 +46,22 @@
         if ($ia == $choix) {
             return "Egalite !";
         }
-        else if (($ia == $choix+1) || ($ia == 1 && $choix == 3))  {
+        else if (in_array($ia, beats($choix)))  {
             return "Defaite...";
         }
-        else if (($ia+1 == $choix) || ($ia == 3 && $choix == 1)) {
+        else if (in_array($choix, beats($ia))) {
             return "Victoire !";
         }
+    }
+
+    function beats($choix) {
+        return [
+            'Pierre'  => ['Feuille','Spock'],
+            'Feuille' => ['Ciseaux','Lezard'],
+            'Ciseaux' => ['Pierre','Spock'],
+            'Lezard' => ['Ciseaux','Pierre'],
+            'Spock' => ['Feuille','Lezard']
+        ][$choix];
     }
 
     function addicon($signe) 
@@ -56,7 +70,9 @@
             {try {
                 if ($signe == 'Pierre') {return '<span class="hand-icon mb-1"><i class="fa-regular fa-hand-back-fist"></i></span>';}
                 elseif ($signe == 'Feuille') {return '<span class="hand-icon mb-1"><i class="fa-regular fa-hand"></i></span>';}
-                else {return '<span class="hand-icon mb-1"><i class="fa-regular fa-hand-scissors"></i></span>';}
+                elseif ($signe == 'Ciseaux') {return '<span class="hand-icon mb-1"><i class="fa-regular fa-hand-scissors"></i></span>';}
+                elseif ($signe == 'Lezard') { return '<span class="hand-icon mb-1"><i class="fa-regular fa-hand-lizard"></i></span>';}
+                else { return '<span class="hand-icon mb-1"><i class="fa-regular fa-hand-spock"></i></span>';}
             } catch (Throwable $t) {return '<div id="player-hand-icon" class="hand-icon mb-1">?</div>';}}
             
         } else {return '<div id="player-hand-icon" class="hand-icon mb-1">?</div>';}
@@ -90,9 +106,8 @@
             exit;
         }
         $choix = $_POST['value'];
-        $nbchoix = signetonb($_POST['value']);
         $ia = $_SESSION['numeroaleatoire'];
-        $resultat = shifumi($ia, $nbchoix);
+        $resultat = shifumi($ia, $choix);
         $_SESSION['nbpartie'] += 1;
         if ($resultat === "Victoire !") {
             $_SESSION['nbvictoire'] += 1;
@@ -164,7 +179,6 @@
                     </span>  
                     <span class="small text-uppercase fw-semibold">Pierre</span>  
                 </button>  
-
                 
                 <button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
                         type="submit" name="value" value="Feuille">  
@@ -172,8 +186,7 @@
                         <i class="fa-regular fa-hand"></i>  
                     </span>  
                     <span class="small text-uppercase fw-semibold">Feuille</span>  
-                </button>  
-
+                </button>
                 
                 <button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
                         type="submit" name="value" value="Ciseaux">  
@@ -181,7 +194,23 @@
                         <i class="fa-regular fa-hand-scissors"></i>  
                     </span>  
                     <span class="small text-uppercase fw-semibold">Ciseaux</span>  
-                </button>  
+                </button>
+
+                <button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
+                        type="submit" name="value" value="Lezard">  
+                    <span class="hand-icon mb-1">  
+                        <i class="fa-regular fa-hand-lizard"></i>  
+                    </span>  
+                    <span class="small text-uppercase fw-semibold">Lézard</span>  
+                </button>
+
+                <button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
+                        type="submit" name="value" value="Spock">  
+                    <span class="hand-icon mb-1">  
+                        <i class="fa-regular fa-hand-spock"></i>  
+                    </span>  
+                    <span class="small text-uppercase fw-semibold">Spock</span>  
+                </button>
         </form>  
 
         <div class="text-center mt-3">  

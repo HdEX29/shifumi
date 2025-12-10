@@ -23,29 +23,15 @@
 
 <body>
     <?php
-    function signetonb($signe) 
-    {
-        if ($signe == 'Pierre') {return 1;}
-        else if ($signe == 'Feuille') {return 2;}
-        else if ($signe == 'Ciseaux') {return 3;}
-    }
-
-    function nbtosigne($nb) 
-    {
-            if ($nb == 1) {return 'Pierre';}
-            else if ($nb == 2) {return 'Feuille';}
-            else if ($nb == 3) {return 'Ciseaux';}
-    }
-
     function shifumi($ia, $choix)
     {
         if ($ia == $choix) {
             return "Egalite !";
         }
-        else if (($ia == $choix+1) || ($ia == 1 && $choix == 3))  {
+        else if ($ia == beats($choix))  {
             return "Defaite...";
         }
-        else if (($ia+1 == $choix) || ($ia == 3 && $choix == 1)) {
+        else if (beats($ia) == $choix) {
             return "Victoire !";
         }
     }
@@ -152,7 +138,7 @@
     if (!isset($_SESSION['nbpartie'])) { $_SESSION['nbpartie'] = 1; }
     if (!isset($_SESSION['nbvictoire'])) { $_SESSION['nbvictoire'] = 0; }
     if (!isset($_SESSION['nbdefaite'])) { $_SESSION['nbdefaite'] = 0; }
-    if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = random_int(1,3);}
+    if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = 1;}
     $resultat = '';
     if (!empty($_POST['value'])) {
         if ($_POST['value'] == 'Reset') {
@@ -161,9 +147,8 @@
             exit;
         }
         $choix = $_POST['value'];
-        $nbchoix = signetonb($_POST['value']);
         $choixMachine = am_choice($choix);
-        $resultat = shifumi(signetonb($choixMachine), $nbchoix);
+        $resultat = shifumi($choixMachine, $choix);
         $_SESSION['nbpartie'] += 1;
         if ($resultat === "Victoire !") {
             $_SESSION['nbvictoire'] += 1;

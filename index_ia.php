@@ -204,6 +204,7 @@
                         <section class="hero">
                             <div class="container">
                                 <h1 class="fw-bold">Jeu Shifumi</h1>
+                                <a href="index_bonus.php" class="btn btn-start mt-3 a"><strong>Tester la version en référence à The Big Bang Theory !</strong></a>
                                 <p class="mt-3">Choisis une main pour affronter AM 😉 </p>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
                                     Rappel des règles
@@ -270,7 +271,6 @@
             </div>  
         </div>  
         <a href="index_aleatoire.php" class="btn btn-start mt-3 a"><strong>Tester la version avec l'IA aleatoire ! </strong></a><br>
-        <a href="index_bonus.php" class="btn btn-start mt-3 a"><strong>Tester la version en référence à The Big Bang Theory !</strong></a>
         <div id="message" class="alert alert-info mt-2 mb-0 message-block">  
             Clique sur une main pour commencer la partie.  
         </div>

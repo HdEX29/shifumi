@@ -23,15 +23,6 @@
 
 <body>
     <?php
-    function signetonb($signe) 
-    {
-        if ($signe == 'Pierre') {return 1;}
-        else if ($signe == 'Feuille') {return 2;}
-        else if ($signe == 'Ciseaux') {return 3;}
-        else if ($signe == 'Lezard') {return 4;}
-        else if ($signe == 'Spock') {return 5;}
-    }
-
     function nbtosigne($nb) 
     {
             if ($nb == 1) {return 'Pierre';}
@@ -97,7 +88,7 @@
     if (!isset($_SESSION['nbpartie'])) { $_SESSION['nbpartie'] = 1; }
     if (!isset($_SESSION['nbvictoire'])) { $_SESSION['nbvictoire'] = 0; }
     if (!isset($_SESSION['nbdefaite'])) { $_SESSION['nbdefaite'] = 0; }
-    if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = random_int(1,5);}
+    if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = 1;}
     $resultat = '';
     if (!empty($_POST['value'])) {
         if ($_POST['value'] == 'Reset') {
@@ -106,7 +97,7 @@
             exit;
         }
         $choix = $_POST['value'];
-        $ia = nbtosigne($_SESSION['numeroaleatoire']);
+        $ia = nbtosigne(random_int(1,5));
         $resultat = shifumi($ia, $choix);
         $_SESSION['nbpartie'] += 1;
         if ($resultat === "Victoire !") {

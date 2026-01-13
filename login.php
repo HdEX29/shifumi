@@ -34,7 +34,7 @@ if ($user) {
         $_SESSION['user_id'] = $user['id_scores'];
         $_SESSION['username'] = $user['nom_utilisateur'];
 
-        header("Location: index(1).php");
+        header("Location: index.php");
         exit;
     } else {
         die("Nom ou mot de passe incorrect");
@@ -52,6 +52,6 @@ if ($user) {
     $_SESSION['user_id'] = $pdo->lastInsertId();
     $_SESSION['username'] = $nom; 
 
-    header("Location: index(1).php");
+    header("Location: index.php");
     exit;
 }

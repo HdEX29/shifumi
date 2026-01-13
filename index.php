@@ -179,6 +179,34 @@ else {$coups = ["Pierre", "Feuille", "Ciseaux", "Lezard", "Spock"];}
     if (!isset($_SESSION['nbdefaite'])) { $_SESSION['nbdefaite'] = 0; }
     if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = 1;}
     if (!isset($_SESSION['username'])) {$_SESSION['username'] = "invite";}
+    $ip = $_SERVER['REMOTE_ADDR'];
+
+    if ($ip === '::1') {
+        $ip = '127.0.0.1';
+    }
+
+    if (strpos($ip, '::ffff:') === 0) {
+        $ip = substr($ip, 7);
+    }
+
+    $stmt = $pdo->prepare("
+        INSERT INTO scores (nom_utilisateur, mot_de_passe)
+        SELECT :username, ''
+        WHERE NOT EXISTS (
+            SELECT 1 FROM scores WHERE nom_utilisateur = :username
+        )
+    ");
+    $stmt->execute([':username' => $username]);
+
+    $stmt = $pdo->prepare("
+        UPDATE scores
+        SET ip_address = :ip
+        WHERE nom_utilisateur = :username
+    ");
+    $stmt->execute([
+        ':ip' => $ip,
+        ':username' => $username
+    ]);
     $resultat = '';
     if (!empty($_POST['value'])) {
         if ($_POST['value'] == 'Reset') {
@@ -520,9 +548,6 @@ else {$coups = ["Pierre", "Feuille", "Ciseaux", "Lezard", "Spock"];}
     </div>
 </div>
 
-</div>
-<div class="modal-footer">
-    <button type="button" class="btn btn-primary">Fermer</button>
 </div>
 </div>
 </div>

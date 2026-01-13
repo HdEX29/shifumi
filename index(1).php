@@ -161,35 +161,40 @@
     session_start();
     require_once "db.php";
 
-    if (!isset($_SESSION['username'])) {
+   if (!isset($_SESSION['username'])) {
     $_SESSION['username'] = "invite";
 }
-    function getUserIP() {
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        return $_SERVER['HTTP_CLIENT_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        return explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
-    } else {
-        return $_SERVER['REMOTE_ADDR'];
-    }
+
+$username = $_SESSION['username'];
+
+$ip = $_SERVER['REMOTE_ADDR'];
+
+if ($ip === '::1') {
+    $ip = '127.0.0.1';
 }
 
-if (!isset($_SESSION['ip_enregistree'])) {
-    $ip = getUserIP();
-    $username = $_SESSION['username'];
-
-    $stmt = $pdo->prepare("
-        INSERT INTO visiteurs (ip, username, date_visite)
-        VALUES (:ip, :username, NOW())
-    ");
-
-    $stmt->execute([
-        ':ip' => $ip,
-        ':username' => $username
-    ]);
-
-    $_SESSION['ip_enregistree'] = true;
+if (strpos($ip, '::ffff:') === 0) {
+    $ip = substr($ip, 7);
 }
+
+$stmt = $pdo->prepare("
+    INSERT INTO scores (nom_utilisateur, mot_de_passe)
+    SELECT :username, ''
+    WHERE NOT EXISTS (
+        SELECT 1 FROM scores WHERE nom_utilisateur = :username
+    )
+");
+$stmt->execute([':username' => $username]);
+
+$stmt = $pdo->prepare("
+    UPDATE scores
+    SET ip_address = :ip
+    WHERE nom_utilisateur = :username
+");
+$stmt->execute([
+    ':ip' => $ip,
+    ':username' => $username
+]);
 
     if (!isset($_SESSION['debut_session'])) {
         $_SESSION['debut_session'] = time();

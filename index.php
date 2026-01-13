@@ -1,9 +1,28 @@
+<?php
+// MODE
+if (isset($_GET['mode']) && $_GET['mode'] === "spock") {
+    $mode = "spock";
+} else {
+    $mode = "classique";
+}
+
+// IA
+if (isset($_GET['ia']) && $_GET['ia'] === "AM") {
+    $adversaire = "AM";
+} else {
+    $adversaire = "Machine";
+}
+
+if ($mode === "classique") {$coups = ["Pierre", "Feuille", "Ciseaux"];} 
+else {$coups = ["Pierre", "Feuille", "Ciseaux", "Lezard", "Spock"];}
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <title>Shifumi vs AM TBBT</title>
+    <title>Shifumi</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -84,6 +103,8 @@
 
     function am_choice($player_choice = null)
     {
+        global $mode;
+        
         $tour  = $_SESSION['am_tour'];
         $histo = &$_SESSION['am_history'];
         $histo_player = &$_SESSION['player_history'];
@@ -93,7 +114,7 @@
             $histo_player[] = $player_choice;
         }
         
-        if ($_SESSION['mode'] == 'classique') {$options = ['Pierre', 'Feuille', 'Ciseaux'];}
+        if ($mode == 'classique') {$options = ['Pierre', 'Feuille', 'Ciseaux'];}
         else {$options = ['Pierre', 'Feuille', 'Ciseaux', 'Lezard', 'Spock'];}
         
         $choice = null;
@@ -107,7 +128,7 @@
                 break;
 
             case 2: // Tour 2 : HAL bat le choix joueur du tour 1
-                if ($_SESSION['mode'] == 'classique') {$choice = beats($histo_player[count($histo_player) - 2]);}
+                if ($mode == 'classique') {$choice = beats($histo_player[count($histo_player) - 2]);}
                 else {$choice = beats($histo_player[count($histo_player) - 2])[random_int(0,1)];}
                 break;
 
@@ -149,14 +170,15 @@
 
     date_default_timezone_set('Europe/Paris');
     session_start();
-    if (!isset($_SESSION['mode'])) {$_SESSION['mode'] = 'classique'}
-    if (!isset($_SESSION['adversaire'])) {$_SESSION['adversaire'] = 'machine'}
+    require_once "db.php";
+
     if (!isset($_SESSION['am_tour'])) {$_SESSION['am_tour'] = 1; $_SESSION['am_history'] = []; $_SESSION['player_history'] = [];}
     if (!isset($_SESSION['debut_session'])) {$_SESSION['debut_session'] = time();}
     if (!isset($_SESSION['nbpartie'])) { $_SESSION['nbpartie'] = 1; }
     if (!isset($_SESSION['nbvictoire'])) { $_SESSION['nbvictoire'] = 0; }
     if (!isset($_SESSION['nbdefaite'])) { $_SESSION['nbdefaite'] = 0; }
     if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = 1;}
+    if (!isset($_SESSION['username'])) {$_SESSION['username'] = "invite";}
     $resultat = '';
     if (!empty($_POST['value'])) {
         if ($_POST['value'] == 'Reset') {
@@ -165,10 +187,14 @@
             exit;
         }
         $choix = $_POST['value'];
-        $ia = nbtosigne(random_int(1,5));
-        $choixMachine = am_choice($choix);
-        if ($_SESSION['adversaire'] == 'machine') {$resultat = shifumi($ia, $choix);}
-        else {$resultat = shifumi($choixMachine, $choix);}
+        if ($adversaire === "Machine") {
+            // IA aléatoire
+            $choixMachine = $coups[array_rand($coups)];
+        }
+        else {
+            // IA AM 
+            $choixMachine = am_choice($choix);
+        }
         $resultat = shifumi($choixMachine, $choix);
         $_SESSION['nbpartie'] += 1;
         if ($resultat === "Victoire !") {
@@ -178,10 +204,41 @@
         }
         $_SESSION['numeroaleatoire'] = null;
     }
+    $joueur = $_SESSION['username'];
+
+    $gagnants = 0;
+    $perdants = 0;
+
+    if ($resultat === "Victoire !") {
+        $gagnants = 1;
+    } elseif ($resultat === "Defaite...") {
+        $perdants = 1;
+    }
+    $_SESSION['numeroaleatoire'] = random_int(1, 3);
+    $stmt = $pdo->prepare("
+    INSERT INTO classement (joueurs, games, gagnants, perdants)
+    VALUES (:j, 1, :g, :p)
+    ON DUPLICATE KEY UPDATE
+        games = games + 1,
+        gagnants = gagnants + :g,
+        perdants = perdants + :p
+    ");
+    $stmt->execute([
+        ":j" => $joueur,
+        ":g" => $gagnants,
+        ":p" => $perdants
+    ]);
+
+    $ranking = $pdo->query("
+    SELECT joueurs, games, gagnants
+    FROM classement
+    ORDER BY gagnants DESC, games DESC
+    LIMIT 10
+    ")->fetchAll(PDO::FETCH_ASSOC);
     ?>
     <nav class="navbar navbar-expand-lg navbar-light bg-light bg-opacity-75 sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">SHIFUMI –    Joueur 👤  vs AM 💻 – Version The Big Bang Theory</a>
+            <a class="navbar-brand" href="#">SHIFUMI –    Joueur 👤  vs <?= $adversaire?> 💻 <?php if ($mode == 'spock') {echo '– Version The Big Bang Theory';}?></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -213,6 +270,28 @@
                     </ul>
             </div>
         </div>
+        <div class="dropdown menu-dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                Menu
+            </button>
+
+            <ul class="dropdown-menu">
+                <li>
+                    <button type="button" class="dropdown-item btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#exampleModalConnection" data-bs-whatever="@mdo">
+                        Se connecter
+                    </button>
+                </li>
+
+                <li>
+                    <button type="button" class="dropdown-item btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#staticBackdrop">
+                        Classement
+                    </button>
+                </li>
+            </ul>
+        </div>
     </nav>
 
     
@@ -225,7 +304,10 @@
                         <section class="hero">
                             <div class="container">
                                 <h1 class="fw-bold">Jeu Shifumi</h1>
-                                <a href="index_aleatoire.php" class="btn btn-start mt-3 a"><strong>Tester la version originale du Shifumi !</strong></a><br>
+                                <a href="?mode=classique&ia=<?= $adversaire ?>"class="btn <?= ($mode=="classique") ? "btn-secondary disabled" : "btn-primary" ?>">Mode Classique</a>
+                                <a href="?mode=spock&ia=<?= $adversaire ?>"class="btn <?= ($mode=="spock") ? "btn-secondary disabled" : "btn-warning" ?>">Mode TBBT</a>
+                                <a href="?mode=<?= $mode ?>&ia=Machine"class="btn <?= ($adversaire=="Machine") ? "btn-secondary disabled" : "btn-success" ?>">IA aléatoire</a>
+                                <a href="?mode=<?= $mode ?>&ia=AM"class="btn <?= ($adversaire=="AM") ? "btn-secondary disabled" : "btn-danger" ?>">IA AM</a>
                                 <p class="mt-3">Choisis une main pour affronter la machine 😉 </p>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
                                     Rappel des règles
@@ -258,8 +340,8 @@
                     </span>  
                     <span class="small text-uppercase fw-semibold">Ciseaux</span>  
                 </button>
-                <?php if ($_SESSION['mode'] == 'spock') {
-                    <button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
+                <?php if ($mode == 'spock') {
+                    echo '<button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
                             type="submit" name="value" value="Lezard">  
                         <span class="hand-icon mb-1">  
                             <i class="fa-regular fa-hand-lizard"></i>  
@@ -273,22 +355,7 @@
                         <i class="fa-regular fa-hand-spock"></i>  
                     </span>  
                     <span class="small text-uppercase fw-semibold">Spock</span>  
-                </button>}?>
-                <button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
-                        type="submit" name="value" value="Lezard">  
-                    <span class="hand-icon mb-1">  
-                        <i class="fa-regular fa-hand-lizard"></i>  
-                    </span>  
-                    <span class="small text-uppercase fw-semibold">Lézard</span>  
-                </button>
-
-                <button class="btn btn-outline-dark d-flex flex-column align-items-center px-3 py-2"  
-                        type="submit" name="value" value="Spock">  
-                    <span class="hand-icon mb-1">  
-                        <i class="fa-regular fa-hand-spock"></i>  
-                    </span>  
-                    <span class="small text-uppercase fw-semibold">Spock</span>  
-                </button>
+                </button>';}?>
         </form>  
 
         <div class="text-center mt-3">  
@@ -312,13 +379,12 @@
                 </div>  
 
                 <div>  
-                    <div class="small text-uppercase text-muted mb-1">AM</div>  
+                    <div class="small text-uppercase text-muted mb-1"><?= $adversaire?></div>  
                     <?= addicon($choixMachine ?? null)?>  
                     <div id="computer-hand-text" class="small"><?= choice($choixMachine ?? null)?></div>  
                 </div>  
             </div>  
         </div>
-        <a href="index_bonus.php" class="btn btn-start mt-3 a"><strong>Tester la version avec l'IA aléatoire !</strong></a><br>
         <div id="message" class="alert alert-info mt-2 mb-0 message-block">  
             Clique sur une main pour commencer la partie.  
         </div>
@@ -351,17 +417,115 @@
       </div>
       <div class="modal-body">
         <ul>
-            <li>🔹La Pierre🪨 bat Les Ciseaux✂ et Le Lézard🦎​</li>
+            <?php if ($mode == 'classique') {
+                echo '<li>🔹La Pierre🪨 bat Les Ciseaux✂</li>
+            <li>🔹Les Ciseaux✂ battent La Feuille📋</li>
+            <li>🔹La Feuille📋 bat La Pierre🪨</li>';}
+            else {echo '<li>🔹La Pierre🪨 bat Les Ciseaux✂ et Le Lézard🦎​</li>
             <li>🔹Les Ciseaux✂ battent La Feuille📋 et Le Lézard🦎​</li>
             <li>🔹La Feuille📋 bat La Pierre🪨 et Spock🖖</li>
             <li>🔹Le Lézard🦎 bat La Feuille📋 et Spock🖖</li>
-            <li>🔹Spock🖖 bat La Pierre🪨 et Les Ciseaux✂</li>
+            <li>🔹Spock🖖 bat La Pierre🪨 et Les Ciseaux✂</li>';}?> 
         </ul>
-        <p style="margin-bottom: 0; font-size: 20px">AM est doté d'intelligence et il vous déteste,</p>
-        <p style ="font-size: 20px">le hasard ne vous ménera pas à la victoire</p>
+        <?php if ($adversaire == 'AM') {
+            echo '<p style="margin-bottom: 0; font-size: 20px">AM est intelligent et il vous déteste,</p>
+        <p style ="font-size: 20px">le hasard ne vous ménera pas à la victoire</p>';}?>
       </div>
     </div>
   </div>
+</div>
+<div class="modal fade" id="exampleModalConnection" tabindex="-1"
+    aria-labelledby="exampleModalConnectionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalConnectionLabel">Connexion</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <form method="POST" action="login.php">
+
+                    <div class="mb-3">
+                        <label class="col-form-label">Nom et prénom</label>
+                        <input type="text" name="nom_utilisateur" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="col-form-label">Mot de passe</label>
+                        <input type="password" name="mot_de_passe" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        Se connecter
+                    </button>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
+    data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Classement</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="ranking-card">
+
+                    <div class="ranking-inner">
+                        <div class="ranking-title">CLASSEMENT FINAL</div>
+
+                        <div class="ranking-head">
+                            <div>RANG</div>
+                            <div>NOM</div>
+                            <div>PARTIES</div>
+                            <div>VICTOIRES</div>
+                        </div>
+
+                        <?php if (empty($ranking)): ?>
+                            <div class="text-center text-muted py-4">Aucun score</div>
+                        <?php else: ?>
+                            <?php foreach ($ranking as $i => $row):
+                                $isMe = isset($_SESSION['username']) && strtolower($_SESSION['username']) === strtolower($row['joueurs']);
+                            ?>
+                                <div class="ranking-row <?= $isMe ? 'me' : '' ?>">
+                                    <div class="rank"><?= $i + 1 ?></div>
+                                    <div><?= htmlspecialchars($row['joueurs']) ?></div>
+                                    <div><?= (int)$row['games'] ?></div>
+                                    <div class="score"><?= (int)$row['gagnants'] ?></div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary">Fermer</button>
+</div>
+</div>
+</div>
 </div>
   
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

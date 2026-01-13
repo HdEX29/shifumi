@@ -170,12 +170,15 @@ else {$coups = ["Pierre", "Feuille", "Ciseaux", "Lezard", "Spock"];}
 
     date_default_timezone_set('Europe/Paris');
     session_start();
+    require_once "db.php";
+
     if (!isset($_SESSION['am_tour'])) {$_SESSION['am_tour'] = 1; $_SESSION['am_history'] = []; $_SESSION['player_history'] = [];}
     if (!isset($_SESSION['debut_session'])) {$_SESSION['debut_session'] = time();}
     if (!isset($_SESSION['nbpartie'])) { $_SESSION['nbpartie'] = 1; }
     if (!isset($_SESSION['nbvictoire'])) { $_SESSION['nbvictoire'] = 0; }
     if (!isset($_SESSION['nbdefaite'])) { $_SESSION['nbdefaite'] = 0; }
     if (!isset($_SESSION['numeroaleatoire'])) {$_SESSION['numeroaleatoire'] = 1;}
+    if (!isset($_SESSION['username'])) {$_SESSION['username'] = "invite";}
     $resultat = '';
     if (!empty($_POST['value'])) {
         if ($_POST['value'] == 'Reset') {
@@ -201,6 +204,37 @@ else {$coups = ["Pierre", "Feuille", "Ciseaux", "Lezard", "Spock"];}
         }
         $_SESSION['numeroaleatoire'] = null;
     }
+    $joueur = $_SESSION['username'];
+
+    $gagnants = 0;
+    $perdants = 0;
+
+    if ($resultat === "Victoire !") {
+        $gagnants = 1;
+    } elseif ($resultat === "Defaite...") {
+        $perdants = 1;
+    }
+    $_SESSION['numeroaleatoire'] = random_int(1, 3);
+    $stmt = $pdo->prepare("
+    INSERT INTO classement (joueurs, games, gagnants, perdants)
+    VALUES (:j, 1, :g, :p)
+    ON DUPLICATE KEY UPDATE
+        games = games + 1,
+        gagnants = gagnants + :g,
+        perdants = perdants + :p
+    ");
+    $stmt->execute([
+        ":j" => $joueur,
+        ":g" => $gagnants,
+        ":p" => $perdants
+    ]);
+
+    $ranking = $pdo->query("
+    SELECT joueurs, games, gagnants
+    FROM classement
+    ORDER BY gagnants DESC, games DESC
+    LIMIT 10
+    ")->fetchAll(PDO::FETCH_ASSOC);
     ?>
     <nav class="navbar navbar-expand-lg navbar-light bg-light bg-opacity-75 sticky-top">
         <div class="container">
@@ -235,6 +269,28 @@ else {$coups = ["Pierre", "Feuille", "Ciseaux", "Lezard", "Spock"];}
                         </li>
                     </ul>
             </div>
+        </div>
+        <div class="dropdown menu-dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                Menu
+            </button>
+
+            <ul class="dropdown-menu">
+                <li>
+                    <button type="button" class="dropdown-item btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#exampleModalConnection" data-bs-whatever="@mdo">
+                        Se connecter
+                    </button>
+                </li>
+
+                <li>
+                    <button type="button" class="dropdown-item btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#staticBackdrop">
+                        Classement
+                    </button>
+                </li>
+            </ul>
         </div>
     </nav>
 
@@ -377,6 +433,99 @@ else {$coups = ["Pierre", "Feuille", "Ciseaux", "Lezard", "Spock"];}
       </div>
     </div>
   </div>
+</div>
+<div class="modal fade" id="exampleModalConnection" tabindex="-1"
+    aria-labelledby="exampleModalConnectionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalConnectionLabel">Connexion</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <form method="POST" action="login.php">
+
+                    <div class="mb-3">
+                        <label class="col-form-label">Nom et prénom</label>
+                        <input type="text" name="nom_utilisateur" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="col-form-label">Mot de passe</label>
+                        <input type="password" name="mot_de_passe" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        Se connecter
+                    </button>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
+    data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Classement</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="ranking-card">
+
+                    <div class="ranking-inner">
+                        <div class="ranking-title">CLASSEMENT FINAL</div>
+
+                        <div class="ranking-head">
+                            <div>RANG</div>
+                            <div>NOM</div>
+                            <div>PARTIES</div>
+                            <div>VICTOIRES</div>
+                        </div>
+
+                        <?php if (empty($ranking)): ?>
+                            <div class="text-center text-muted py-4">Aucun score</div>
+                        <?php else: ?>
+                            <?php foreach ($ranking as $i => $row):
+                                $isMe = isset($_SESSION['username']) && strtolower($_SESSION['username']) === strtolower($row['joueurs']);
+                            ?>
+                                <div class="ranking-row <?= $isMe ? 'me' : '' ?>">
+                                    <div class="rank"><?= $i + 1 ?></div>
+                                    <div><?= htmlspecialchars($row['joueurs']) ?></div>
+                                    <div><?= (int)$row['games'] ?></div>
+                                    <div class="score"><?= (int)$row['gagnants'] ?></div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary">Fermer</button>
+</div>
+</div>
+</div>
 </div>
   
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

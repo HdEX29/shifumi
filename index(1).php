@@ -161,6 +161,36 @@
     session_start();
     require_once "db.php";
 
+    if (!isset($_SESSION['username'])) {
+    $_SESSION['username'] = "invite";
+}
+    function getUserIP() {
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        return $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        return explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
+    } else {
+        return $_SERVER['REMOTE_ADDR'];
+    }
+}
+
+if (!isset($_SESSION['ip_enregistree'])) {
+    $ip = getUserIP();
+    $username = $_SESSION['username'];
+
+    $stmt = $pdo->prepare("
+        INSERT INTO visiteurs (ip, username, date_visite)
+        VALUES (:ip, :username, NOW())
+    ");
+
+    $stmt->execute([
+        ':ip' => $ip,
+        ':username' => $username
+    ]);
+
+    $_SESSION['ip_enregistree'] = true;
+}
+
     if (!isset($_SESSION['debut_session'])) {
         $_SESSION['debut_session'] = time();
     }
@@ -493,9 +523,7 @@
 </div>
 
 </div>
-<div class="modal-footer">
-    <button type="button" class="btn btn-primary">Fermer</button>
-</div>
+
 </div>
 </div>
 </div>
